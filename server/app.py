@@ -17,10 +17,41 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+    def get(self):
+        get_plant = Plant.query.all()
+        plants_dict = [plant.serialize() for plant in get_plant]
+        response = make_response(jsonify(plants_dict),200)
+        return response
+    
+    def post(self):
+        data = request.get_json()
+
+        name = data.get("name")
+        image = data.get("image")
+        price = data.get("price")
+
+        new_data = Plant(name = name,image=image,price = price)
+        db.session.add(new_data)
+        db.session.commit()
+
+        response = make_response(jsonify(new_data.serialize()),200)
+        return response
+api.add_resource(Plants, "/plants")
+
+
+
 
 class PlantByID(Resource):
-    pass
+    def get(self,id):
+        get_id = Plant.query.get(id)
+        if not get_id:
+            return {"error": "not found"}
+        else:
+            plant_dict =  get_id.serialize()
+            response = make_response(jsonify(plant_dict),200)
+            return response
+
+api.add_resource(PlantByID, "/plants/<int:id>")
         
 
 if __name__ == '__main__':
